@@ -26,7 +26,7 @@ ROOT = HERE.parent
 
 logger = logging.getLogger(__name__)
 
-MODEL_URL = "https://github.com/achilis1505/RoadDamageDetection/raw/main/models/YOLOv12_Road_Defects_Model.pt"  # noqa: E501
+MODEL_URL = "https://github.com/zellancehq/client-aston-unified-road-defect-perception/releases/download/v1.0/YOLOv12_Road_Defects_Model.pt"  # noqa: E501
 MODEL_LOCAL_PATH = ROOT / "./models/YOLOv12_Road_Defects_Model.pt"
 
 # Download the model if it doesn't exist

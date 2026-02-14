@@ -5,6 +5,6 @@ torch==2.0.0
 ultralytics>=8.2.0
 opencv-python-headless==4.8.0.74
 requests==2.28.2
-# Optional: For real-time webcam detection (disabled pages)
-# av>=11.0.0
-# streamlit-webrtc>=0.47.1
+# For real-time webcam and video detection
+av>=11.0.0
+streamlit-webrtc>=0.47.1

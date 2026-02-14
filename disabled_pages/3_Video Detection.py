@@ -13,8 +13,8 @@ from ultralytics import YOLO
 from sample_utils.download import download_file
 
 st.set_page_config(
-    page_title="YOLO Model",
-    page_icon="📷",
+    page_title="Video Road Damage Detection - YOLOv12",
+    page_icon="🎥",
     layout="centered",
     initial_sidebar_state="expanded"
 )
@@ -24,25 +24,61 @@ ROOT = HERE.parent
 
 logger = logging.getLogger(__name__)
 
-MODEL_URL = "https://github.com/achilis1505/RoadDamageDetection/raw/main/models/YOLOv8_Small_RDD.pt"  # noqa: E501
-MODEL_LOCAL_PATH = ROOT / "./models/YOLOv8_Small_RDD.pt"
-download_file(MODEL_URL, MODEL_LOCAL_PATH, expected_size=89569358)
+MODEL_URL = "https://github.com/zellancehq/client-aston-unified-road-defect-perception/releases/download/v1.0/YOLOv12_Road_Defects_Model.pt"  # noqa: E501
+MODEL_LOCAL_PATH = ROOT / "./models/YOLOv12_Road_Defects_Model.pt"
 
-# Session-specific caching
+# Download the model if it doesn't exist
+@st.cache_resource
+def download_yolo_model():
+    try:
+        # Check if model directory exists
+        model_dir = MODEL_LOCAL_PATH.parent
+        model_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Download model if it doesn't exist
+        if not MODEL_LOCAL_PATH.exists():
+            with st.spinner("Downloading YOLOv12 model... This may take a few moments."):
+                try:
+                    download_file(MODEL_URL, MODEL_LOCAL_PATH, expected_size=None)
+                    if MODEL_LOCAL_PATH.exists():
+                        st.success("✅ YOLOv12 model downloaded successfully!")
+                        return str(MODEL_LOCAL_PATH)
+                    else:
+                        raise Exception("Download completed but file not found")
+                except Exception as download_error:
+                    st.error(f"❌ Failed to download model: {download_error}")
+                    return None
+        else:
+            return str(MODEL_LOCAL_PATH)
+            
+    except Exception as e:
+        logger.error(f"Failed to download model: {e}")
+        st.error("⚠️ Could not download YOLOv12 model.")
+        return None
+
+# Load the YOLO model
+@st.cache_resource
+def load_yolo_model():
+    try:
+        model_path = download_yolo_model()
+        if model_path:
+            return YOLO(model_path)
+        return None
+    except Exception as e:
+        logger.error(f"Failed to load YOLO model: {e}")
+        st.error(f"⚠️ Error loading YOLO model: {str(e)}")
+        return None
+
 # Load the model
-cache_key = "yolov8smallrdd"
-if cache_key in st.session_state:
-    net = st.session_state[cache_key]
-else:
-    net = YOLO(MODEL_LOCAL_PATH)
-    st.session_state[cache_key] = net
+with st.spinner("Loading YOLOv12 model..."):
+    net = load_yolo_model()
 
 CLASSES = [
-    "Cracks",
-    "Alligator Cracks",
-    "Potholes",
-    "Patching",
-    "Rutting"
+    "alligator cracking",  # Index 0
+    "linear cracking",     # Index 1
+    "patching",            # Index 2
+    "pothole",             # Index 3
+    "rutting"              # Index 4
 ]
 
 class Detection(NamedTuple):
@@ -182,14 +218,31 @@ def processVideo(video_file, score_threshold):
             # Rerun the application
             st.rerun()
 
-st.title("Road Damage Detection - Video")
-st.write("Detect the road damage in using Video input. Upload the video and start detecting. This section can be useful for examining and process the recorded videos.")
+st.title("Video Road Damage Detection - YOLOv12")
+
+st.write("""
+Detect road damage in video files using YOLOv12 deep learning model. Upload a video to process 
+and detect damage throughout the footage. This is useful for examining and processing recorded videos.
+""")
+
+if net is None:
+    st.error("❌ YOLOv12 model failed to load. Please check your internet connection and try refreshing the page.")
+    st.stop()
 
 video_file = st.file_uploader("Upload Video", type=".mp4", disabled=st.session_state.runningInference)
-st.caption("There is 1GB limit for video size with .mp4 extension. Resize or cut your video if its bigger than 1GB.")
+st.caption("⚠️ There is 1GB limit for video size with .mp4 extension. Resize or cut your video if it's bigger than 1GB.")
 
-score_threshold = st.slider("Confidence Threshold", min_value=0.0, max_value=1.0, value=0.15, step=0.05, disabled=st.session_state.runningInference)
-st.write("Lower the threshold if there is no damage detected, and increase the threshold if there is false prediction. You can change the threshold before running the inference.")
+score_threshold = st.slider(
+    "Confidence Threshold", 
+    min_value=0.0, 
+    max_value=1.0, 
+    value=0.15, 
+    step=0.05, 
+    disabled=st.session_state.runningInference,
+    help="Lower the threshold if no damage is detected, increase if there are false predictions"
+)
+
+st.info("💡 Lower the threshold if no damage is detected, and increase if there are false predictions. You can change the threshold before running inference.")
 
 if video_file is not None:
     if st.button('Process Video', use_container_width=True, disabled=st.session_state.runningInference, type="secondary", key="processing_button"):

@@ -90,7 +90,7 @@ st.markdown(
     ---
 
     ### 📚 **Documentation & Resources**
-    - 🌐 **Project Repository**: [GitHub - RoadDamageDetection](https://github.com/achilis1505/RoadDamageDetection)
+    - 🌐 **Project Repository**: [GitHub - client-aston-unified-road-defect-perception](https://github.com/zellancehq/client-aston-unified-road-defect-perception)
     - 📧 **Contact**: tasmiayemna@gmail.com
     - 📖 **Framework Credits**: Built with [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics) and [Streamlit](https://streamlit.io/)
 

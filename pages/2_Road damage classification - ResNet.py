@@ -163,7 +163,7 @@ class ImageClassifier:
         }
 
 # Model configuration
-MODEL_URL = "https://github.com/achilis1505/RoadDamageDetection/raw/main/models/ResNet50_Road_Defects_Model.pth"
+MODEL_URL = "https://github.com/zellancehq/client-aston-unified-road-defect-perception/releases/download/v1.0/ResNet50_Road_Defects_Model.pth"
 MODEL_LOCAL_PATH = ROOT / "./models/ResNet50_Road_Defects_Model.pth"
 
 # Download the model if it doesn't exist
